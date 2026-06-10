@@ -1,0 +1,374 @@
+===========================================================
+  DATADEX — BEGINNER'S GUIDE
+  "Everything you need to know, from zero to asking questions"
+===========================================================
+
+
+WHAT IS DATADEX?
+----------------
+Imagine you have a big pile of PDF files, Word documents, and Excel
+register tables sitting in a folder. Normally, if you want to find
+something in them, you have to open each file and search manually.
+
+Datadex reads all those files FOR you, learns what's inside, and
+remembers everything. Then, when you ask Claude Code a question like
+"what is the I2C timing for chip XYZ?", Datadex finds the answer from
+your documents instantly — without you opening a single file.
+
+Think of Datadex as a librarian. You give the librarian your books
+(documents). The librarian reads them all. Later, you just ask the
+librarian your question, and they tell you the answer.
+
+
+===========================================================
+  PART 1 — BEFORE YOU START
+  (Things you need to install first)
+===========================================================
+
+You need TWO things on your computer before using Datadex:
+
+  1. Python 3.10 or newer
+  2. Claude Code
+
+--- Installing Python ---
+
+Open PowerShell and type:
+
+    winget install Python.Python.3.14
+
+Then close and reopen PowerShell. Check it worked:
+
+    python --version
+
+You should see something like: Python 3.14.4
+If you see that, Python is ready.
+
+--- Installing Claude Code ---
+
+In PowerShell, type:
+
+    npm install -g @anthropic-ai/claude-code
+
+(You need Node.js for this. If npm is not found, install Node.js
+from https://nodejs.org first, then try again.)
+
+Check it worked:
+
+    claude --version
+
+
+===========================================================
+  PART 2 — SETUP
+  (Do this once, the first time only)
+===========================================================
+
+Step 1: Open PowerShell and go to the DataDex folder.
+
+    Ex: cd <path\to\DataDex>
+
+Step 2: Run the setup script.
+
+    .\setup.ps1
+
+That's it. The script does everything automatically:
+
+    [1/5] Finds Python on your computer
+    [2/5] Creates a private Python environment (so nothing breaks)
+    [3/5] Installs all required packages
+    [4/5] Creates a config file (.mcp.json) so Claude knows where Datadex is
+    [5/5] Creates the workspace folders for your documents
+
+At the end you will see:
+
+    Setup complete!
+
+The first time you run ingest (Part 4), Python will download a small
+AI model (~80 MB) from the internet. This only happens once. After
+that, everything works fully offline.
+
+
+===========================================================
+  PART 3 — WHERE TO PUT YOUR DOCUMENTS
+===========================================================
+
+Datadex organises documents into "workspaces". Each workspace is
+like a drawer in a filing cabinet — one drawer per project.
+
+By default, one workspace is created for you:
+
+    datadex\workspaces\demo\docs\       <-- your documents go here
+
+You can add more workspaces for different projects (see Part 7).
+
+Supported file types:
+
+    .pdf     PDF files (datasheets, specs)
+    .docx    Word documents (programming guides, notes)
+    .xlsx    Excel files (register maps, tables)
+    .md      Markdown text files
+
+Example — if you have a PDF datasheet:
+
+    Copy the file to:
+    datadex\workspaces\demo\docs\my_datasheet.pdf
+
+That's all. You do not need to rename the file or do anything else.
+
+NOTE: Ignore any files starting with ~$ (like ~$my_file.docx).
+Those are temporary files created by Word/Excel when the file is
+open. Datadex will skip them automatically.
+
+
+===========================================================
+  PART 4 — INGESTING (Teaching Datadex your documents)
+===========================================================
+
+After you put documents in the docs\ folders, you need to tell
+Datadex to READ them. This is called "ingesting".
+
+Step 1: Go into the datadex folder.
+
+    Ex: cd <path\to\DataDex>\datadex
+
+Step 2: Run ingest for ALL workspaces at once.
+
+    .\.venv\Scripts\python.exe datadex.py ingest --all
+
+Datadex will go through every workspace, read every file, and save
+everything into its database. You will see output like:
+
+    [*] Scanning 2 file(s) in ...\demo\docs
+      [DOC] Parsing Word: programmer_guide.docx
+           -> 47 chunk(s) indexed
+      [XL]  Parsing Excel: register_map.xlsx
+           -> 312 register(s) stored
+    [OK] 'demo' done — 359 chunk(s), 312 register(s)
+
+    [OK] All workspaces ingested.
+
+When you see "[OK] All workspaces ingested." — Datadex is ready.
+
+--- If you only want to ingest one workspace ---
+
+    .\.venv\Scripts\python.exe datadex.py ingest --workspace demo
+
+--- If you updated your documents and want to start fresh ---
+
+    .\.venv\Scripts\python.exe datadex.py ingest --all --reindex
+
+(--reindex clears the old data and rebuilds everything from scratch.)
+
+
+===========================================================
+  PART 5 — CONNECTING TO CLAUDE CODE
+===========================================================
+
+After setup.ps1 ran successfully, a file called .mcp.json was
+created in the DataDex folder. Claude Code reads this file
+automatically to find Datadex.
+
+You just need to RESTART Claude Code once after setup.
+
+    1. Close Claude Code completely.
+    2. Open Claude Code again inside the DataDex folder.
+    3. Datadex connects automatically in the background.
+
+You do not need to do anything else. Claude Code and Datadex are
+now talking to each other.
+
+To confirm Datadex is connected, you can ask Claude:
+
+    "List my Datadex workspaces"
+
+Claude should reply with the list of your workspaces and how many
+documents are in each one.
+
+
+===========================================================
+  PART 6 — ASKING QUESTIONS
+===========================================================
+
+Now the fun part. Just talk to Claude Code in plain English.
+
+--- Searching for information ---
+
+    "Search Datadex for I2C timing parameters"
+    "What does the I2C_CTRL register do?"
+    "Find anything about power management in workspace demo"
+
+--- Looking up a specific register ---
+
+    "Look up register 0xFC in workspace demo"
+    "What is the reset value of the I2C_CFG register?"
+
+--- Getting a summary ---
+
+    "Summarise what Datadex knows about the I2C design"
+    "Give me an overview of the register map"
+
+--- Checking what's available ---
+
+    "List all my Datadex workspaces"
+    "What documents does workspace demo have?"
+
+Claude will search Datadex first, then give you an answer based on
+YOUR documents — not general internet knowledge.
+
+
+===========================================================
+  PART 7 — ADDING A NEW WORKSPACE
+===========================================================
+
+When you start a new project and need a new workspace:
+
+Step 1: Open setup.ps1 in a text editor.
+
+Step 2: Find this section near the top:
+
+    $KnownWorkspaces = @(
+        @{ Name = "demo"; Description = "Demo workspace ..." }
+    )
+
+Step 3: Add your new workspace on a new line inside the @( ):
+
+        @{ Name = "project_a"; Description = "Project A — your description here" }
+
+Step 4: Save setup.ps1 and run it again:
+
+    cd <path\to\DataDex>
+    .\setup.ps1
+
+The new workspace folder is created automatically.
+
+Step 5: Drop your documents in:
+
+    datadex\workspaces\project_a\docs\
+
+Step 6: Ingest:
+
+    cd datadex
+    .\.venv\Scripts\python.exe datadex.py ingest --workspace project_a
+
+
+===========================================================
+  PART 8 — DAILY WORKFLOW (once everything is set up)
+===========================================================
+
+Normal day-to-day use is simple:
+
+  ADDING NEW DOCUMENTS:
+    1. Copy the file into the right docs\ folder.
+    2. Run:  .\.venv\Scripts\python.exe datadex.py ingest --all --reindex
+    3. Ask Claude your question.
+
+  ASKING QUESTIONS:
+    Just open Claude Code and ask. No extra steps needed.
+
+  RE-INGESTING FROM SCRATCH:
+    .\.venv\Scripts\python.exe datadex.py ingest --all --reindex
+
+
+===========================================================
+  PART 9 — QUICK COMMAND REFERENCE
+===========================================================
+
+All commands below are run from:  <path\to\DataDex>\datadex
+
+  Ingest all workspaces:
+    .\.venv\Scripts\python.exe datadex.py ingest --all
+
+  Ingest one workspace:
+    .\.venv\Scripts\python.exe datadex.py ingest --workspace demo
+
+  Re-index everything from scratch:
+    .\.venv\Scripts\python.exe datadex.py ingest --all --reindex
+
+  List all workspaces and their document counts:
+    .\.venv\Scripts\python.exe datadex.py list
+
+  Quick search from the command line (without Claude):
+    .\.venv\Scripts\python.exe datadex.py query --workspace demo --search "I2C timing"
+
+  Quick register lookup from the command line:
+    .\.venv\Scripts\python.exe datadex.py query --workspace demo --register I2C_CFG
+
+  Re-run setup (after adding a new workspace to setup.ps1):
+    cd <path\to\DataDex>
+    .\setup.ps1
+
+
+===========================================================
+  PART 10 — TROUBLESHOOTING
+===========================================================
+
+  "python is not recognized"
+    -> Python is not in your PATH. Reinstall Python and make sure
+       to tick "Add Python to PATH" during installation.
+
+  "pip install failed"
+    -> Check your internet connection. Also make sure you ran
+       setup.ps1 from inside the DataDex folder, not somewhere else.
+
+  "Docs directory not found"
+    -> You are running ingest before setup.ps1 created the folders.
+       Run .\setup.ps1 first.
+
+  "No files found"
+    -> The docs\ folder is empty. Copy your documents in first.
+
+  Claude says "I don't have access to Datadex"
+    -> Datadex is not connected. Make sure:
+       a) setup.ps1 ran successfully (check .mcp.json exists)
+       b) You opened Claude Code from inside the DataDex folder
+       c) You restarted Claude Code after setup
+
+  Answers seem outdated after adding new documents
+    -> You need to re-ingest:
+       .\.venv\Scripts\python.exe datadex.py ingest --all --reindex
+
+  Word/Excel files failing to parse
+    -> Close the file in Word/Excel first. Open files create ~$ lock
+       files that cannot be read. Datadex skips them automatically,
+       but the real file may also be locked while it is open.
+
+
+===========================================================
+  FOLDER LAYOUT SUMMARY
+===========================================================
+
+  DataDex\
+    setup.ps1              Run this once to install everything
+    .mcp.json              Auto-generated — do not edit manually
+    README.txt             This file
+    overview.md            Feature overview and architecture
+    architecture.md        Deep technical details
+    datadex\
+      datadex.py           The CLI tool you use for ingest/query
+      datadex_server.py    Runs in the background for Claude
+      config.yaml          Global settings
+      requirements.txt     Python packages list
+      .venv\               Private Python environment (auto-created)
+      core\                Source code (you don't need to touch this)
+      workspaces\
+        demo\
+          docs\            <-- put your documents here
+          data\            Auto-created after first ingest
+        <your_project>\    Add more workspaces via setup.ps1
+          docs\
+          data\
+
+
+===========================================================
+  THAT'S IT!
+===========================================================
+
+To summarise the whole thing in 6 lines:
+
+  1. Run .\setup.ps1 once.
+  2. Copy your documents into the right docs\ folder.
+  3. Run:  datadex.py ingest --all
+  4. Restart Claude Code.
+  5. Ask Claude your questions.
+  6. When you add new documents, repeat steps 2 and 3.
+
+===========================================================

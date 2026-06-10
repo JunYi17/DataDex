@@ -1,0 +1,15 @@
+default_workspace: demo
+
+workspaces_dir: ./workspaces/
+
+mcp:
+  server_name: datadex
+  transport: stdio
+
+storage:
+  chroma_dir: ./data/chroma/
+  sqlite_path: ./data/registers.db
+
+embedding:
+  model: default
+  dimension: 384

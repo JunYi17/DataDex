@@ -1,0 +1,4 @@
+﻿workspace: "demo"
+description: "Demo workspace — replace with your project name"
+docs_path: ./docs
+data_path: ./data
